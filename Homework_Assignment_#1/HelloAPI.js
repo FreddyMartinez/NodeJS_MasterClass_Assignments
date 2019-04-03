@@ -69,7 +69,7 @@ handlers.hello = function (language, callback) {
     callback(200, { 'message': response });
 };
 
-// Hello handler
+// Bye handler
 handlers.bye = function (language, callback) {
     var response = '';
     if(language ==='de'){
