@@ -31,11 +31,11 @@ var server = http.createServer(function (req, res) {
 
         // Route the request to the handler specified in the router
         chosenHandler(lang, function (statusCode, payload) {
-            // Use the status code returned from the handler, or set the default status code to 200
-            statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
+            // Use the status code returned from the handler, or set the default status code to 500 (internal server error)
+            statusCode = typeof(statusCode) == 'number' ? statusCode : 500;
 
             // Use the payload returned from the handler, or set the default payload to an empty object
-            payload = typeof (payload) == 'object' ? payload : {};
+            payload = typeof(payload) == 'object' ? payload : {};
 
             // Convert the payload to a string
             var payloadString = JSON.stringify(payload);
@@ -56,7 +56,7 @@ server.listen(3000, function () {
 // Define all the handlers
 var handlers = {};
 
-// Handler
+// Hello handler
 handlers.hello = function (language, callback) {
     var response = '';
     if(language ==='de'){
@@ -66,15 +66,29 @@ handlers.hello = function (language, callback) {
     }else{
         response = 'hello!! Welcome!';
     }
-    callback(406, { 'message': response });
+    callback(200, { 'message': response });
+};
+
+// Hello handler
+handlers.bye = function (language, callback) {
+    var response = '';
+    if(language ==='de'){
+        response = 'auf wiedersehen!';
+    }else if(language ==='es'){
+        response = 'adios!';
+    }else{
+        response = 'goodbye!';
+    }
+    callback(200, { 'message': response });
 };
 
 // Not found handler
-handlers.notFound = function (callback) {
+handlers.notFound = function (language, callback) {
     callback(404);
 };
 
 // Define the request router
 var router = {
-    'hello': handlers.hello
+    'hello': handlers.hello,
+    'bye': handlers.bye
 };
