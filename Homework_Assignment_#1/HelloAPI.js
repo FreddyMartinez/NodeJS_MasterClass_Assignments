@@ -5,6 +5,7 @@
 
 var http = require('http');
 var url = require('url');
+var StringDecoder = require('string_decoder').StringDecoder;
 
 var server = http.createServer(function (req, res) {
 
@@ -14,16 +15,22 @@ var server = http.createServer(function (req, res) {
     // Get the path
     var path = parsedUrl.pathname;
     var trimmedPath = path.replace(/^\/+|\/+$/g, '');
+    
+    var decoder = new StringDecoder('utf-8');
+    var buffer = '';
     req.on('data', function(data) {
-        //do nothing
+        buffer += decoder.write(data);
     });
     req.on('end', function(){
 
-        // Check the router for a matching path for a handler. If one is not found, use the notFound handler instead.
-        var chosenHandler = typeof (router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
+        buffer += decoder.end();
+        var lang = buffer && typeof(buffer === 'object')? JSON.parse(buffer)["lang"] : "";
+        
+        // Check the router for a matching path for a handler.
+        var chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
 
         // Route the request to the handler specified in the router
-        chosenHandler(function (statusCode, payload) {
+        chosenHandler(lang, function (statusCode, payload) {
             // Use the status code returned from the handler, or set the default status code to 200
             statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
 
@@ -49,9 +56,17 @@ server.listen(3000, function () {
 // Define all the handlers
 var handlers = {};
 
-// Sample handler
-handlers.hello = function (callback) {
-    callback(406, { 'message': 'hello!! Welcome!' });
+// Handler
+handlers.hello = function (language, callback) {
+    var response = '';
+    if(language ==='de'){
+        response = 'Hallo!! Willkommen!';
+    }else if(language ==='es'){
+        response = 'Hola!! Bienvenido!';
+    }else{
+        response = 'hello!! Welcome!';
+    }
+    callback(406, { 'message': response });
 };
 
 // Not found handler
